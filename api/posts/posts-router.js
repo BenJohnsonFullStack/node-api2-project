@@ -35,7 +35,7 @@ router.get("/:id", async (req, res) => {
 
 router.post("/", async (req, res) => {
   const { title, contents } = req.body;
-  const newPost = await Posts.insert({
+  const newPostId = await Posts.insert({
     title,
     contents,
   });
@@ -45,6 +45,8 @@ router.post("/", async (req, res) => {
         .status(400)
         .json({ message: "Please provide title and contents for the post" });
     } else {
+      const { id } = newPostId;
+      const newPost = await Posts.findById(id);
       res.status(201).json(newPost);
     }
   } catch (err) {
