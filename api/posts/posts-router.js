@@ -35,16 +35,16 @@ router.get("/:id", async (req, res) => {
 
 router.post("/", async (req, res) => {
   const { title, contents } = req.body;
-  const newPostId = await Posts.insert({
-    title,
-    contents,
-  });
   try {
     if (!title || !contents) {
       res
         .status(400)
         .json({ message: "Please provide title and contents for the post" });
     } else {
+      const newPostId = await Posts.insert({
+        title,
+        contents,
+      });
       const { id } = newPostId;
       const newPost = await Posts.findById(id);
       res.status(201).json(newPost);
@@ -59,19 +59,22 @@ router.post("/", async (req, res) => {
 router.put("/:id", async (req, res) => {
   const { title, contents } = req.body;
   const { id } = req.params;
-  const recordsUpdated = await Posts.update(id, { title, contents });
   try {
-    const updatedPost = await Posts.findById(id);
-    if (!updatedPost) {
-      res
-        .status(404)
-        .json({ message: "The post with the specified ID does not exist" });
-    } else if (!title || !contents) {
+    const post = await Posts.findById(id);
+    if (!title || !contents) {
       res
         .status(400)
         .json({ message: "Please provide title and contents for the post" });
-    } else if (recordsUpdated) {
-      res.status(200).json(updatedPost);
+    } else if (!post) {
+      res
+        .status(404)
+        .json({ message: "The post with the specified ID does not exist" });
+    } else {
+      const recordsUpdated = await Posts.update(id, { title, contents });
+      if (recordsUpdated) {
+        const updatedPost = await Posts.findById(id);
+        res.status(200).json(updatedPost);
+      }
     }
   } catch (err) {
     res
